@@ -1,5 +1,7 @@
 import json
 import requests
+from celery import shared_task
+
 from currency.models import Payment, Currency, Pair, Deal
 
 
@@ -31,6 +33,7 @@ def get_p2p_data(asset='USDT', fiat='RUB', trade_type='BUY', pay_types=None):
     return res
 
 
+@shared_task
 def get_deals():
     Deal.objects.all().delete()
     for p in Pair.objects.all():
@@ -40,6 +43,7 @@ def get_deals():
         print('saved deals for pair:' + str(p))
 
 
+@shared_task
 def make_all_pairs():
     payments = Payment.objects.all()
     fiats = Currency.objects.filter(is_fiat=1)

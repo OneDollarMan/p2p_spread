@@ -21,5 +21,4 @@ def index(request):
 
 
 def update(request):
-    tasks.get_deals()
     return redirect('index')
