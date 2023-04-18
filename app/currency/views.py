@@ -1,6 +1,5 @@
 from django.shortcuts import render, redirect
 
-from currency import tasks
 from currency.models import Deal, Currency
 
 

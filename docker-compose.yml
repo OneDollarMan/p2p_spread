@@ -1,0 +1,43 @@
+services:
+  web:
+    build: ./app
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./app:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=1
+    depends_on:
+      - rabbitmq
+
+  rabbitmq:
+    image: rabbitmq:3.11.13-management
+    hostname: rabbitmq
+    restart: always
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+
+  celery:
+    build: ./app
+    command: celery -A p2p_spread worker -l INFO
+    volumes:
+      - ./app:/app
+    environment:
+      - DEBUG=1
+    depends_on:
+      - rabbitmq
+      - web
+
+  celery-beat:
+    build: ./app
+    command: celery -A p2p_spread beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    volumes:
+      - ./app:/app
+    environment:
+      - DEBUG=1
+    depends_on:
+      - rabbitmq
+      - web
+      - celery
