@@ -5,7 +5,7 @@ from time import sleep
 import requests
 from celery import shared_task
 
-from currency.models import Payment, Currency, Pair, Deal
+from currency.models import Payment, Currency, Pair, Deal, Chain2
 
 
 class DealerStealer:
@@ -60,14 +60,14 @@ class DealerStealer:
             deals = self.get_p2p_data(asset=p.asset.abbr, fiat=p.fiat.abbr, trade_type=p.trade_type, pay_types=[p.payment.binance_name])
             for d in deals:
                 Deal(seller=d['seller'], price=d['price'], amount=d['amount'], pair=p).save()
-            print(f'({threading.current_thread().name}) saved deals for pair:' + str(p))
             sleep(1)
 
 
 @shared_task
 def get_deals():
     Deal.objects.all().delete()
-    DealerStealer(pairs=Pair.objects.all(), thread_count=20).start()
+    DealerStealer(pairs=Pair.objects.all(), thread_count=10).start()
+    calculate_profit.delay()
 
 
 @shared_task
@@ -87,4 +87,22 @@ def make_all_pairs():
 
 @shared_task
 def calculate_profit():
-    ...
+    assets = Currency.objects.filter(is_fiat=0)
+    fiats = Currency.objects.filter(is_fiat=1)
+    Chain2.objects.all().delete()
+    for a in assets:
+        for f in fiats:
+            buy_pairs = Pair.objects.filter(asset=a, fiat=f, trade_type='BUY')
+            sell_pairs = Pair.objects.filter(asset=a, fiat=f)
+            for buy_pair in buy_pairs:
+                try:
+                    buy_deal = Deal.objects.get(pair=buy_pair)
+                except Deal.DoesNotExist:
+                    continue
+                for sell_pair in sell_pairs:
+                    try:
+                        sell_deal = Deal.objects.get(pair=sell_pair)
+                    except Deal.DoesNotExist:
+                        continue
+                    profit = round((sell_deal.price / buy_deal.price) * 100 - 100, 2)
+                    Chain2(buy_pair=buy_pair, buy_price=buy_deal.price, sell_pair=sell_pair, sell_price=sell_deal.price, profit=profit).save()

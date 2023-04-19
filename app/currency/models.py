@@ -45,3 +45,11 @@ class Deal(models.Model):
 
     def __str__(self):
         return f'({self.pair}) {self.price} - {self.amount}'
+
+
+class Chain2(models.Model):
+    buy_pair = models.ForeignKey(Pair, related_name='buy_pair', on_delete=models.CASCADE, default=0)
+    buy_price = models.FloatField(default=0)
+    sell_pair = models.ForeignKey(Pair, related_name='sell_pair', on_delete=models.CASCADE, default=0)
+    sell_price = models.FloatField(default=0)
+    profit = models.FloatField(default=0)
