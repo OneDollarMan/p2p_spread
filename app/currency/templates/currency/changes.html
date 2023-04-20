@@ -1,0 +1,74 @@
+{% extends "currency/base.html" %}
+{% block content %}
+<div class="">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between">
+            Выгодные цепочки сделок (Рубли)
+            <span class="badge bg-primary">Последнее обновление: {{ time }}</span>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <tr>
+                    <th>#</th>
+                    <th>Актив</th>
+                    <th>Покупаем</th>
+                    <th>Продаем</th>
+                    <th>Профит</th>
+                </tr>
+                {% for chain in chain2 %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ chain.buy_pair.asset }}</td>
+                    <td>({{ chain.buy_pair.payment.name }}) {{ chain.buy_price}}</td>
+                    <td>({{ chain.sell_pair.payment.name }} {% if chain.sell_pair.trade_type == 'BUY' %} заявкой{% endif%}) {{ chain.sell_price}}</td>
+                    <td><span class="badge {% if chain.profit_percentage > 0 %}bg-success{% else %}bg-danger{% endif %}">{{ chain.profit_percentage }}%</span></td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+    <br>
+    <div class="card">
+        <div class="card-header d-flex justify-content-between">
+            Цепочки сделок обратные (Рубли)
+            <span class="badge bg-primary">Последнее обновление: {{ time }}</span>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <tr>
+                    <th></th>
+                    <th colspan="4">Туда</th>
+                    <th colspan="4">Обратно</th>
+                    <th>Общая прибыль</th>
+                </tr>
+                <tr>
+                    <th>#</th>
+                    <th>Актив</th>
+                    <th>Покупаем</th>
+                    <th>Продаем</th>
+                    <th>Профит</th>
+                    <th>Актив</th>
+                    <th>Покупаем</th>
+                    <th>Продаем</th>
+                    <th>Профит</th>
+                    <th></th>
+                </tr>
+                {% for chain in chain2reverse %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ chain.forward_chain.buy_pair.asset }}</td>
+                    <td>({{ chain.forward_chain.buy_pair.payment.name }}) {{ chain.forward_chain.buy_price}}</td>
+                    <td>({{ chain.forward_chain.sell_pair.payment.name }} {% if chain.forward_chain.sell_pair.trade_type == 'BUY' %} заявкой{% endif%}) {{ chain.forward_chain.sell_price}}</td>
+                    <td><span class="badge {% if chain.forward_chain.profit_percentage > 0 %}bg-success{% else %}bg-danger{% endif %}">{{ chain.forward_chain.profit_percentage }}%</span></td>
+                    <td>{{ chain.backward_chain.buy_pair.asset }}</td>
+                    <td>({{ chain.backward_chain.buy_pair.payment.name }}) {{ chain.backward_chain.buy_price}}</td>
+                    <td>({{ chain.backward_chain.sell_pair.payment.name }} {% if chain.backward_chain.sell_pair.trade_type == 'BUY' %} заявкой{% endif%}) {{ chain.backward_chain.sell_price}}</td>
+                    <td><span class="badge {% if chain.backward_chain.profit_percentage > 0 %}bg-success{% else %}bg-danger{% endif %}">{{ chain.backward_chain.profit_percentage }}%</span></td>
+                    <td><span class="badge {% if chain.profit_percentage > 0 %}bg-success{% else %}bg-danger{% endif %}">{{ chain.profit_percentage }}%</span></td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

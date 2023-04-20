@@ -1,13 +1,28 @@
 from django.shortcuts import render, redirect
 from django_celery_beat.models import PeriodicTask
 
-from currency import tasks
-from currency.models import Deal, Currency, Chain2
+from currency.models import Deal, Currency, Chain2, Chain2Reverse
 
 
 def index(request):
     context = {
-        'title': 'Главная',
+        'title': 'Главная'
+    }
+    return render(request, 'currency/index.html', context)
+
+
+def changes(request):
+    context = {
+        'title': 'Цепочки сделок',
+        'time': PeriodicTask.objects.get(task='currency.tasks.get_deals').last_run_at,
+        'chain2': Chain2.objects.filter(buy_pair__fiat__abbr='RUB').order_by('-profit')[:10],
+        'chain2reverse': Chain2Reverse.objects.filter(forward_chain__buy_pair__fiat__abbr='RUB').order_by('-profit')[:10]
+    }
+    return render(request, 'currency/changes.html', context)
+
+
+def rates(request):
+    context = {
         'assets': Currency.objects.filter(is_fiat=0),
         'deals_RaiffeisenBank_rub_buy': Deal.objects.filter(pair__fiat__abbr='RUB', pair__payment__binance_name='RaiffeisenBank', pair__trade_type='BUY'),
         'deals_RaiffeisenBank_rub_sell': Deal.objects.filter(pair__fiat__abbr='RUB', pair__payment__binance_name='RaiffeisenBank', pair__trade_type='SELL'),
@@ -17,11 +32,6 @@ def index(request):
         'deals_YandexMoneyNew_rub_sell': Deal.objects.filter(pair__fiat__abbr='RUB', pair__payment__binance_name='YandexMoneyNew', pair__trade_type='SELL'),
         'deals_QIWI_rub_buy': Deal.objects.filter(pair__fiat__abbr='RUB', pair__payment__binance_name='QIWI', pair__trade_type='BUY'),
         'deals_QIWI_rub_sell': Deal.objects.filter(pair__fiat__abbr='RUB', pair__payment__binance_name='QIWI', pair__trade_type='SELL'),
-        'time': PeriodicTask.objects.get(task='currency.tasks.get_deals').last_run_at,
-        'chain2': Chain2.objects.order_by('-profit')[:10]
+        'time': PeriodicTask.objects.get(task='currency.tasks.get_deals').last_run_at
     }
-    return render(request, 'currency/change.html', context)
-
-
-def update(request):
-    return redirect('index')
+    return render(request, 'currency/rates.html', context)

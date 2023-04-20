@@ -5,7 +5,7 @@ from time import sleep
 import requests
 from celery import shared_task
 
-from currency.models import Payment, Currency, Pair, Deal, Chain2
+from currency.models import Payment, Currency, Pair, Deal, Chain2, Chain2Reverse
 
 
 class DealerStealer:
@@ -67,7 +67,7 @@ class DealerStealer:
 def get_deals():
     Deal.objects.all().delete()
     DealerStealer(pairs=Pair.objects.all(), thread_count=10).start()
-    calculate_profit.delay()
+    calculate_chain2.delay()
 
 
 @shared_task
@@ -86,10 +86,9 @@ def make_all_pairs():
 
 
 @shared_task
-def calculate_profit():
+def calculate_chain2():
     assets = Currency.objects.filter(is_fiat=0)
     fiats = Currency.objects.filter(is_fiat=1)
-    Chain2.objects.all().delete()
     for a in assets:
         for f in fiats:
             buy_pairs = Pair.objects.filter(asset=a, fiat=f, trade_type='BUY')
@@ -104,5 +103,28 @@ def calculate_profit():
                         sell_deal = Deal.objects.get(pair=sell_pair)
                     except Deal.DoesNotExist:
                         continue
-                    profit = round((sell_deal.price / buy_deal.price) * 100 - 100, 2)
-                    Chain2(buy_pair=buy_pair, buy_price=buy_deal.price, sell_pair=sell_pair, sell_price=sell_deal.price, profit=profit).save()
+                    profit = sell_deal.price / buy_deal.price
+                    try:
+                        chain2 = Chain2.objects.get(buy_pair=buy_pair, sell_pair=sell_pair)
+                        chain2.buy_price = buy_deal.price
+                        chain2.sell_price = sell_deal.price
+                        chain2.profit = profit
+                        chain2.save()
+                    except Chain2.DoesNotExist:
+                        Chain2(buy_pair=buy_pair, buy_price=buy_deal.price, sell_pair=sell_pair, sell_price=sell_deal.price, profit=profit).save()
+    calculate_chain2_reverse.delay()
+
+
+@shared_task
+def calculate_chain2_reverse():
+    c_forwards = Chain2.objects.all()
+    for c_forward in c_forwards:
+        c_backwards = Chain2.objects.filter(buy_pair__fiat=c_forward.sell_pair.fiat, buy_pair__payment=c_forward.sell_pair.payment, sell_pair__payment=c_forward.buy_pair.payment)
+        for c_backward in c_backwards:
+            profit = c_backward.profit * c_forward.profit
+            try:
+                chain2_reverse = Chain2Reverse.objects.get(forward_chain=c_forward, backward_chain=c_backward)
+                chain2_reverse.profit = profit
+                chain2_reverse.save()
+            except Chain2Reverse.DoesNotFound:
+                Chain2Reverse(forward_chain=c_forward, backward_chain=c_backward, profit=profit).save()

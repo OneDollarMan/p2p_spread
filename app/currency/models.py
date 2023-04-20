@@ -53,3 +53,25 @@ class Chain2(models.Model):
     sell_pair = models.ForeignKey(Pair, related_name='sell_pair', on_delete=models.CASCADE, default=0)
     sell_price = models.FloatField(default=0)
     profit = models.FloatField(default=0)
+
+    @property
+    def profit_percentage(self):
+        return round((self.profit - 1) * 100, 2)
+
+    @profit_percentage.setter
+    def profit_percentage(self, value):
+        self.profit = value
+
+
+class Chain2Reverse(models.Model):
+    forward_chain = models.ForeignKey(Chain2, related_name='forward_chain', on_delete=models.CASCADE, default=0)
+    backward_chain = models.ForeignKey(Chain2, related_name='backward_chain', on_delete=models.CASCADE, default=0)
+    profit = models.FloatField(default=0)
+
+    @property
+    def profit_percentage(self):
+        return round((self.profit-1) * 100, 2)
+
+    @profit_percentage.setter
+    def profit_percentage(self, value):
+        self.profit = value
