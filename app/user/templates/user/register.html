@@ -1,0 +1,18 @@
+{% extends "currency/base.html" %}
+{% load bootstrap5 %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        Регистрация
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% bootstrap_form form %}
+            {% buttons %}
+            <button type="submit" class="btn btn-success">Зарегистрироваться</button>
+            {% endbuttons %}
+        </form>
+    </div>
+</div>
+{% endblock %}

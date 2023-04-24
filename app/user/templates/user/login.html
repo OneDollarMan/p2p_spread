@@ -1,0 +1,23 @@
+{% extends "currency/base.html" %}
+{% load bootstrap5 %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        Аутентификация
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% bootstrap_form form %}
+            {% buttons %}
+            <button type="submit" class="btn btn-success">Войти</button>
+            <a href="{% url 'password_reset' %}" class="ps-3">Сброс пароля</a>
+            {% endbuttons %}
+        </form>
+
+    </div>
+    <div class="card-footer">
+        Нет аккаунта? <a href="{% url 'register' %}">Регистрация</a>
+    </div>
+</div>
+{% endblock %}

@@ -14,7 +14,6 @@ services:
   rabbitmq:
     image: rabbitmq:3.11.13-management
     hostname: rabbitmq
-    restart: always
     ports:
       - "15672:15672"
       - "5672:5672"

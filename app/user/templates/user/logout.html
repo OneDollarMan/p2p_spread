@@ -1,0 +1,14 @@
+{% extends "currency/base.html" %}
+{% load bootstrap5 %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        Вы вышли
+    </div>
+    <div class="card-body">
+        Благодарим вас за время, проведенное на этом сайте.
+      <a href="{% url 'login' %}" class="card-link">Войти снова</a>
+    </div>
+
+</div>
+{% endblock %}

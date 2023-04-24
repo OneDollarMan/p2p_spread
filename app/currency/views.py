@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django_celery_beat.models import PeriodicTask
 
@@ -11,6 +12,7 @@ def index(request):
     return render(request, 'currency/index.html', context)
 
 
+@login_required
 def changes(request):
     context = {
         'title': 'Цепочки сделок',
@@ -21,8 +23,10 @@ def changes(request):
     return render(request, 'currency/changes.html', context)
 
 
+@login_required
 def rates(request):
     context = {
+        'title': 'Сделки',
         'assets': Currency.objects.filter(is_fiat=0),
         'deals_RaiffeisenBank_rub_buy': Deal.objects.filter(pair__fiat__abbr='RUB', pair__payment__binance_name='RaiffeisenBank', pair__trade_type='BUY'),
         'deals_RaiffeisenBank_rub_sell': Deal.objects.filter(pair__fiat__abbr='RUB', pair__payment__binance_name='RaiffeisenBank', pair__trade_type='SELL'),
@@ -35,3 +39,11 @@ def rates(request):
         'time': PeriodicTask.objects.get(task='currency.tasks.get_deals').last_run_at
     }
     return render(request, 'currency/rates.html', context)
+
+
+@login_required
+def donate(request):
+    context = {
+        'title': 'Донат'
+    }
+    return render(request, 'currency/donate.html', context)

@@ -1,0 +1,36 @@
+{% extends "currency/base.html" %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        Ваш профиль
+    </div>
+    <div class="card-body">
+        <table class="table">
+            <tr>
+                <td class="text-muted">
+                    Имя пользователя
+                </td>
+                <td class="ps-5">
+                    {{ user.username }}
+                </td>
+            </tr>
+            <tr>
+                <td class="text-muted">
+                    Email
+                </td>
+                <td class="ps-5">
+                    {{ user.email }}
+                </td>
+            </tr>
+            <tr>
+                <td class="text-muted">
+                    Пароль
+                </td>
+                <td class="ps-5">
+                    <a href="{% url 'password_change' %}" class="btn btn-primary">Изменить пароль</a>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+{% endblock %}

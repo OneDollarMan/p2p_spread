@@ -1,0 +1,21 @@
+{% extends "currency/base.html" %}
+{% load bootstrap5 %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        Обратная связь
+    </div>
+    <div class="card-body">
+        <p style="max-width: 500px">
+            Здесь вы можете выразить свои идеи и пожелания
+        </p>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% bootstrap_form form %}
+            {% buttons %}
+            <button type="submit" class="btn btn-success">Отправить</button>
+            {% endbuttons %}
+        </form>
+    </div>
+</div>
+{% endblock %}

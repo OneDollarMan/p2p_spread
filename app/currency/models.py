@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Avg
 from django.utils.translation import gettext_lazy as _
 
 
@@ -36,6 +37,10 @@ class Pair(models.Model):
         else:
             return f'({self.payment}) {self.asset.abbr} - {self.fiat.abbr}'
 
+    @property
+    def price_average(self):
+        return self.deal_set.aggregate(Avg('price'))['price__avg']
+
 
 class Deal(models.Model):
     seller = models.CharField(max_length=45)
@@ -49,9 +54,7 @@ class Deal(models.Model):
 
 class Chain2(models.Model):
     buy_pair = models.ForeignKey(Pair, related_name='buy_pair', on_delete=models.CASCADE, default=0)
-    buy_price = models.FloatField(default=0)
     sell_pair = models.ForeignKey(Pair, related_name='sell_pair', on_delete=models.CASCADE, default=0)
-    sell_price = models.FloatField(default=0)
     profit = models.FloatField(default=0)
 
     @property
@@ -70,7 +73,7 @@ class Chain2Reverse(models.Model):
 
     @property
     def profit_percentage(self):
-        return round((self.profit-1) * 100, 2)
+        return round((self.profit - 1) * 100, 2)
 
     @profit_percentage.setter
     def profit_percentage(self, value):

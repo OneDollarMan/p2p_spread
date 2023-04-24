@@ -4,6 +4,7 @@ from time import sleep
 
 import requests
 from celery import shared_task
+from django.db import connection
 
 from currency.models import Payment, Currency, Pair, Deal, Chain2, Chain2Reverse
 
@@ -59,15 +60,21 @@ class DealerStealer:
                 p = self.pairs.pop()
             deals = self.get_p2p_data(asset=p.asset.abbr, fiat=p.fiat.abbr, trade_type=p.trade_type, pay_types=[p.payment.binance_name])
             for d in deals:
-                Deal(seller=d['seller'], price=d['price'], amount=d['amount'], pair=p).save()
+                try:
+                    deal = Deal.objects.get(pair=p)
+                    deal.seller = d['seller']
+                    deal.price = d['price']
+                    deal.amount = d['amount']
+                    deal.save()
+                except Deal.DoesNotExist:
+                    Deal(seller=d['seller'], price=d['price'], amount=d['amount'], pair=p).save()
             sleep(1)
 
 
 @shared_task
 def get_deals():
-    Deal.objects.all().delete()
     DealerStealer(pairs=Pair.objects.all(), thread_count=10).start()
-    calculate_chain2.delay()
+    update_chain2.delay()
 
 
 @shared_task
@@ -94,37 +101,42 @@ def calculate_chain2():
             buy_pairs = Pair.objects.filter(asset=a, fiat=f, trade_type='BUY')
             sell_pairs = Pair.objects.filter(asset=a, fiat=f)
             for buy_pair in buy_pairs:
-                try:
-                    buy_deal = Deal.objects.get(pair=buy_pair)
-                except Deal.DoesNotExist:
-                    continue
                 for sell_pair in sell_pairs:
-                    try:
-                        sell_deal = Deal.objects.get(pair=sell_pair)
-                    except Deal.DoesNotExist:
-                        continue
-                    profit = sell_deal.price / buy_deal.price
+                    profit = sell_pair.price_average/buy_pair.price_average
                     try:
                         chain2 = Chain2.objects.get(buy_pair=buy_pair, sell_pair=sell_pair)
-                        chain2.buy_price = buy_deal.price
-                        chain2.sell_price = sell_deal.price
                         chain2.profit = profit
                         chain2.save()
                     except Chain2.DoesNotExist:
-                        Chain2(buy_pair=buy_pair, buy_price=buy_deal.price, sell_pair=sell_pair, sell_price=sell_deal.price, profit=profit).save()
+                        Chain2(buy_pair=buy_pair, sell_pair=sell_pair, profit=profit).save()
     calculate_chain2_reverse.delay()
 
 
 @shared_task
 def calculate_chain2_reverse():
+    Chain2Reverse.objects.all().delete()
     c_forwards = Chain2.objects.all()
     for c_forward in c_forwards:
-        c_backwards = Chain2.objects.filter(buy_pair__fiat=c_forward.sell_pair.fiat, buy_pair__payment=c_forward.sell_pair.payment, sell_pair__payment=c_forward.buy_pair.payment)
+        c_backwards = Chain2.objects.filter(buy_pair__fiat=c_forward.sell_pair.fiat, buy_pair__payment=c_forward.sell_pair.payment, sell_pair__payment=c_forward.buy_pair.payment).exclude(pk=c_forward.pk)
         for c_backward in c_backwards:
             profit = c_backward.profit * c_forward.profit
-            try:
-                chain2_reverse = Chain2Reverse.objects.get(forward_chain=c_forward, backward_chain=c_backward)
-                chain2_reverse.profit = profit
-                chain2_reverse.save()
-            except Chain2Reverse.DoesNotFound:
-                Chain2Reverse(forward_chain=c_forward, backward_chain=c_backward, profit=profit).save()
+            Chain2Reverse(forward_chain=c_forward, backward_chain=c_backward, profit=profit).save()
+
+
+@shared_task
+def update_chain2():
+    with connection.cursor() as cursor:
+        cursor.execute("UPDATE currency_chain2 SET profit = (SELECT AVG(price) FROM currency_deal WHERE pair_id=sell_pair_id) / (SELECT AVG(price) FROM currency_deal WHERE pair_id=buy_pair_id)")
+    #for c in Chain2.objects.all():
+    #    c.profit = c.sell_pair.price_average/c.buy_pair.price_average
+    #    c.save()
+    update_chain2_reverse.delay()
+
+
+@shared_task
+def update_chain2_reverse():
+    with connection.cursor() as cursor:
+        cursor.execute("UPDATE currency_chain2reverse SET profit = (SELECT profit FROM currency_chain2 WHERE id=backward_chain_id) * (SELECT profit FROM currency_chain2 WHERE id=forward_chain_id)")
+    #for c in Chain2Reverse.objects.all():
+    #    c.profit = c.backward_chain.profit * c.forward_chain.profit
+    #    c.save()
