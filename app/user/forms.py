@@ -26,8 +26,8 @@ class CustomPasswordResetForm(PasswordResetForm):
 
 
 class FeedbackForm(forms.ModelForm):
-    title = forms.CharField(label='Заголовок', help_text='Маскимальная длина - 50 символов')
-    text = forms.CharField(widget=forms.Textarea, label='Текст', help_text='Маскимальная длина - 500 символов')
+    title = forms.CharField(label='Заголовок', help_text='Максимальная длина - 50 символов')
+    text = forms.CharField(widget=forms.Textarea, label='Текст', help_text='Максимальная длина - 500 символов')
 
     class Meta:
         model = Feedback
