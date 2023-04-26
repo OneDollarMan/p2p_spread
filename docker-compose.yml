@@ -1,15 +1,20 @@
 services:
   web:
     build: ./app
-    command: python manage.py runserver 0.0.0.0:8000
+    command: gunicorn p2p_spread.wsgi
     volumes:
       - ./app:/app
-    ports:
-      - "8000:8000"
-    environment:
-      - DEBUG=1
+    expose:
+      - "8000"
     depends_on:
       - rabbitmq
+
+  nginx:
+    build: ./nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - web
 
   rabbitmq:
     image: rabbitmq:3.11.13-management
@@ -23,8 +28,6 @@ services:
     command: celery -A p2p_spread worker -l INFO
     volumes:
       - ./app:/app
-    environment:
-      - DEBUG=1
     depends_on:
       - rabbitmq
       - web
@@ -34,8 +37,6 @@ services:
     command: celery -A p2p_spread beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler
     volumes:
       - ./app:/app
-    environment:
-      - DEBUG=1
     depends_on:
       - rabbitmq
       - web
