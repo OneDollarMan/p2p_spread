@@ -4,8 +4,8 @@ services:
     command: gunicorn p2p_spread.wsgi --bind 0.0.0.0:8000
     volumes:
       - ./app:/app
-    ports:
-      - "8000:8000"
+    expose:
+      - "8000"
     depends_on:
       - rabbitmq
 
