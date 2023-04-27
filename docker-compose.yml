@@ -13,6 +13,9 @@ services:
     build: ./nginx
     ports:
       - "80:80"
+      - "443:443"
+    volumes:
+      - ./app/certs:/etc/nginx/certs
     depends_on:
       - web
 
