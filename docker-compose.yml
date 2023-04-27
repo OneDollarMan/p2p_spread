@@ -1,7 +1,7 @@
 services:
   web:
     build: ./app
-    command: python -m gunicorn p2p_spread.wsgi
+    command: gunicorn p2p_spread.wsgi --bind 0.0.0.0:8000
     volumes:
       - ./app:/app
     expose:
