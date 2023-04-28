@@ -12,5 +12,4 @@ COPY entrypoint.sh entrypoint.sh
 COPY . .
 
 RUN chmod +x /app/entrypoint.sh
-RUN chmod -R 644 /app/static
 ENTRYPOINT ["/app/entrypoint.sh"]
