@@ -9,6 +9,8 @@ from user import forms
 
 
 def login_view(request):
+    if request.user.is_authenticated:
+        messages.error(request, 'Вы уже авторизованы')
     if request.method == 'POST':
         form = AuthenticationForm(None, request.POST)
         if form.is_valid():
@@ -29,6 +31,9 @@ def login_view(request):
 
 
 def register_view(request):
+    if request.user.is_authenticated:
+        messages.error(request, 'Вы уже авторизованы')
+        return HttpResponseRedirect('/')
     if request.method == 'POST':
         form = forms.RegisterForm(request.POST)
         if form.is_valid():
