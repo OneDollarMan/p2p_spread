@@ -4,6 +4,7 @@ services:
     command: gunicorn p2p_spread.wsgi --bind 0.0.0.0:8000
     volumes:
       - ./app:/app
+      - static_volume:/static
     expose:
       - "8000"
     depends_on:
@@ -18,6 +19,7 @@ services:
       - ./nginx:/etc/nginx/conf.d
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
+      - static_volume:/static
     depends_on:
       - web
     command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
@@ -54,3 +56,6 @@ services:
       - rabbitmq
       - web
       - celery
+
+volumes:
+  static_volume:
