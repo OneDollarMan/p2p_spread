@@ -38,8 +38,8 @@ services:
     image: rabbitmq:3.11.13-management
     hostname: rabbitmq
     expose:
-      - "15672:15672"
-      - "5672:5672"
+      - "15672"
+      - "5672"
     restart: always
 
   celery:
