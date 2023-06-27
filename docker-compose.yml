@@ -9,6 +9,7 @@ services:
       - "8000"
     depends_on:
       - rabbitmq
+    restart: always
 
   nginx:
     image: nginx:latest
@@ -23,6 +24,7 @@ services:
     depends_on:
       - web
     command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+    restart: always
 
   certbot:
     image: certbot/certbot
@@ -30,13 +32,15 @@ services:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    restart: always
 
   rabbitmq:
     image: rabbitmq:3.11.13-management
     hostname: rabbitmq
-    ports:
+    expose:
       - "15672:15672"
       - "5672:5672"
+    restart: always
 
   celery:
     build: ./app
@@ -46,6 +50,7 @@ services:
     depends_on:
       - rabbitmq
       - web
+    restart: always
 
   celery-beat:
     build: ./app
@@ -56,6 +61,7 @@ services:
       - rabbitmq
       - web
       - celery
+    restart: always
 
 volumes:
   static_volume:
