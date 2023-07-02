@@ -1,0 +1,55 @@
+{% extends "currency/base.html" %}
+{% load bootstrap5 %}
+{% block content %}
+<div class="d-flex flex-fill">
+    <div class="d-flex flex-column">
+        <div class="card m-2">
+            <div class="card-header">
+            Фильтры
+            </div>
+            <div class="card-body">
+                <form method="get" enctype="multipart/form-data">
+                    {% bootstrap_form form %}
+                    {% buttons %}
+                    <button type="submit" class="btn btn-success">Фильтр</button>
+                    <a href="{% url 'changes_chain2reverse' %}" class="btn btn-danger">Сбросить</a>
+                    {% endbuttons %}
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="card m-2 flex-fill">
+        <div class="card-header d-flex justify-content-between">
+            Цепочки сделок обратные (Рубли)
+            <span class="badge bg-primary">Обновлено: {{ time }}</span>
+        </div>
+        <div class="card-body">
+            <table class="table table-hover table-striped border">
+                <tr>
+                    <th></th>
+                    <th colspan="6">Туда</th>
+                    <th colspan="6">Обратно</th>
+                    <th>Профит</th>
+                </tr>
+                <tr>
+                    <th>#</th>
+                    <th colspan="5">Сделка</th>
+                    <th>Профит</th>
+                    <th colspan="5">Сделка</th>
+                    <th>Профит</th>
+                    <th></th>
+                </tr>
+                {% for chain in chain2reverse %}
+                <tr style="font-weight: bold;">
+                    <td>{{ forloop.counter }}</td>
+                    {% include 'currency/macro/chain.html' with chain=chain.forward_chain %}
+                    {% include 'currency/macro/chain.html' with chain=chain.backward_chain %}
+                    <td class="align-middle"><span class="badge {% if chain.profit_percentage > 0 %}bg-success{% else %}bg-danger{% endif %}">{{ chain.profit_percentage }}%</span></td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
