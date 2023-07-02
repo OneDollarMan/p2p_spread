@@ -1,0 +1,4 @@
+<td align="right"><div class="d-flex flex-column"><div><span class="badge bg-secondary">{{ chain.buy_pair.price_average }}</span></div><div>{{ chain.buy_pair.payment.name }}</div></div></td>
+<td class="align-middle">→</td><td class="align-middle">{{ chain.buy_pair.asset.abbr }}</td><td class="align-middle">→</td>
+<td><div class="d-flex flex-column"><div><span class="badge bg-secondary">{{ chain.sell_pair.price_average }}</span></div><div>{{ chain.sell_pair.payment.name }}{% if chain.sell_pair.trade_type == 'BUY' %} заявкой{% endif%}</div></div></td>
+<td class="border-end align-middle"><span class="badge {% if chain.profit_percentage > 0 %}bg-success{% else %}bg-danger{% endif %}">{{ chain.profit_percentage }}%</span></td>

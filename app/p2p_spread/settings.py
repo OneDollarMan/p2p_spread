@@ -22,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-%1oxk8$o9zqd6d4^8^8v&$xu)b$0&v+m01f7@jssa5rlje1e*8'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = [
     '.localhost', '127.0.0.1', '[::1]', 'coindripper.ru', 'coindripper.site'
@@ -71,10 +71,13 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'p2p_spread.context_processor.site_name'
             ]
         },
     },
 ]
+
+SITE_NAME = 'CoinDripper'
 
 WSGI_APPLICATION = 'p2p_spread.wsgi.application'
 

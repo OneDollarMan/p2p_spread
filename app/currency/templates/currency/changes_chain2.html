@@ -1,0 +1,44 @@
+{% extends "currency/base.html" %}
+{% load bootstrap5 %}
+{% block content %}
+<div class="d-flex flex-fill">
+    <div class="d-flex flex-column">
+        <div class="card m-2">
+            <div class="card-header">
+            Фильтры
+            </div>
+            <div class="card-body">
+                <form method="get" enctype="multipart/form-data">
+                    {% bootstrap_form form %}
+                    {% buttons %}
+                    <button type="submit" class="btn btn-success">Фильтр</button>
+                    <a href="{% url 'changes_chain2' %}" class="btn btn-danger">Сбросить</a>
+                    {% endbuttons %}
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="card m-2 flex-fill">
+        <div class="card-header d-flex justify-content-between">
+            Выгодные цепочки сделок (Рубли)
+            <span class="badge bg-primary">Обновлено: {{ time }}</span>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped table-hover border">
+                <tr>
+                    <th>#</th>
+                    <th colspan="5">Сделка</th>
+                    <th>Профит</th>
+                </tr>
+                {% for chain in chain2 %}
+                <tr style="font-weight: bold;">
+                    <td>{{ forloop.counter }}</td>
+                    {% include 'currency/macro/chain.html' with chain=chain %}
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,72 +1,96 @@
 {% extends 'bootstrap5/bootstrap5.html' %}
 {% block bootstrap5_title %}
-CoinDripper — {{ title }}
+    {{ SITE_NAME }} — {{ title }}
 {% endblock %}
-
+{% load static %}
 {% load bootstrap5 %}
 {% bootstrap_css %}
 {% bootstrap_javascript %}
 {% bootstrap_messages %}
 
 {% block bootstrap5_content %}
-<div class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
-    <div class="container">
-        <a class="navbar-brand" href="{% url 'index' %}">CoinDripper</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
-                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'rates' %}">Курсы валют</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'changes' %}">Сделки</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'feedback' %}">Обратная связь</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/donate">Донат</a>
-                </li>
+<div class="d-flex flex-column min-vh-100">
+    <header class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'index' %}">{{ SITE_NAME }}</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarSupportedContent"
+                    aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'rates' %}">Курсы валют</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                           aria-expanded="false">
+                            Спреды
+                        </a>
+                        <ul class="dropdown-menu p-2 rounded-3 mx-0 shadow w-220px">
+                            <div class="d-grid gap-1">
+                                <li><a class="dropdown-item rounded-2" href="{% url 'changes_chain2' %}">Спреды</a></li>
+                                <li><a class="dropdown-item rounded-2" href="{% url 'changes_chain2reverse' %}">Обратные
+                                    спреды</a></li>
+                            </div>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'feedback' %}">Обратная связь</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/donate">Донат</a>
+                    </li>
+                </ul>
+                <div class="">
+                    {% if user.is_authenticated %}
+                    <a class="btn btn-primary" href="{% url 'profile' %}">Профиль</a>
+                    <a class="btn btn-primary" href="{% url 'logout' %}">Выйти</a>
+                    {% else %}
+                    <a class="btn btn-primary" href="{% url 'login' %}">Вход</a>
+                    <a class="btn btn-primary" href="{% url 'register' %}">Регистрация</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </header>
+    <main class="flex-grow-1" id="content">
+        {% if messages %}
+        <div class="toast-container position-absolute end-0 p-3">
+            {% for message in messages %}
+            <div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header">
+                    <svg class="bd-placeholder-img rounded me-2" width="20" height="20"
+                         xmlns="http://www.w3.org/2000/svg"
+                         aria-hidden="true" preserveAspectRatio="xMidYMid slice" focusable="false">
+                        <rect width="100%" height="100%" fill="#007aff"></rect>
+                    </svg>
+                    <strong class="me-auto">Уведомление</strong>
+                    <small>Сейчас</small>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body">
+                    {{message}}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <div class="container p-2 d-flex justify-content-center">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+    <footer class="footer mt-auto py-3 bg-light border-top">
+        <div class="container d-flex flex-wrap justify-content-between align-items-center">
+            <div class="col-md-4 d-flex align-items-center">
+                <span class="mb-3 mb-md-0 text-body-secondary">© {% now 'Y' %} {{ SITE_NAME }}</span>
+            </div>
+            <ul class="nav col-md-4 justify-content-end list-unstyled d-flex">
+
             </ul>
-            <div class="">
-                {% if user.is_authenticated %}
-                <a class="btn btn-primary" href="{% url 'profile' %}">Профиль</a>
-                <a class="btn btn-primary" href="{% url 'logout' %}">Выйти</a>
-                {% else %}
-                <a class="btn btn-primary" href="{% url 'login' %}">Вход</a>
-                <a class="btn btn-primary" href="{% url 'register' %}">Регистрация</a>
-                {% endif %}
-            </div>
         </div>
-    </div>
-</div>
-<div id="content">
-    {% if messages %}
-    <div class="toast-container position-absolute end-0 p-3">
-        {% for message in messages %}
-        <div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="toast-header">
-                <svg class="bd-placeholder-img rounded me-2" width="20" height="20" xmlns="http://www.w3.org/2000/svg"
-                     aria-hidden="true" preserveAspectRatio="xMidYMid slice" focusable="false">
-                    <rect width="100%" height="100%" fill="#007aff"></rect>
-                </svg>
-                <strong class="me-auto">Уведомление</strong>
-                <small>Сейчас</small>
-                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-            <div class="toast-body">
-                {{message}}
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
-    <div class="container p-2 d-flex justify-content-center">
-        {% block content %}{% endblock %}
-    </div>
+    </footer>
 </div>
 
 <script type="text/javascript">

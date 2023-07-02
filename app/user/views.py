@@ -1,4 +1,4 @@
-from django.contrib.auth import logout, login
+from django.contrib.auth import logout, login, authenticate
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
@@ -19,7 +19,7 @@ def login_view(request):
             messages.success(request, 'Вы успешно вошли')
             return HttpResponseRedirect('/')
         else:
-            messages.error(request, 'Введите правильное имя пользователя и пароль')
+            messages.error(request, 'Введите правильное имя пользователя или пароль')
             return HttpResponseRedirect('/accounts/login')
     else:
         if request.GET.get('next'):
@@ -39,11 +39,16 @@ def register_view(request):
         form = forms.RegisterForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Вы успешно зарегистрировались, авторизуйтесь')
-            return HttpResponseRedirect('/accounts/login')
+            new_user = authenticate(username=form.cleaned_data['username'], password=form.cleaned_data['password1'],)
+            login(request, new_user)
+            messages.success(request, 'Вы успешно зарегистрировались')
+            return HttpResponseRedirect('/')
         else:
-            messages.error(request, 'Что-то пошло не так')
-            return HttpResponseRedirect('/accounts/register')
+            context = {
+                'title': 'Регистрация',
+                'form': form
+            }
+            return render(request, 'user/register.html', context)
     else:
         context = {
             'title': 'Регистрация',
