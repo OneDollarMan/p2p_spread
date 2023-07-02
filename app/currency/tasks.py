@@ -127,16 +127,5 @@ def calculate_chain2_reverse():
 def update_chain2():
     with connection.cursor() as cursor:
         cursor.execute("UPDATE currency_chain2 SET profit = (SELECT AVG(price) FROM currency_deal WHERE pair_id=sell_pair_id) / (SELECT AVG(price) FROM currency_deal WHERE pair_id=buy_pair_id)")
-    #for c in Chain2.objects.all():
-    #    c.profit = c.sell_pair.price_average/c.buy_pair.price_average
-    #    c.save()
-    update_chain2_reverse.delay()
-
-
-@shared_task
-def update_chain2_reverse():
-    with connection.cursor() as cursor:
         cursor.execute("UPDATE currency_chain2reverse SET profit = (SELECT profit FROM currency_chain2 WHERE id=backward_chain_id) * (SELECT profit FROM currency_chain2 WHERE id=forward_chain_id)")
-    #for c in Chain2Reverse.objects.all():
-    #    c.profit = c.backward_chain.profit * c.forward_chain.profit
-    #    c.save()
+        cursor.fetchall()
