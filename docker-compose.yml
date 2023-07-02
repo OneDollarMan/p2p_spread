@@ -9,6 +9,7 @@ services:
       - "8000"
     depends_on:
       - rabbitmq
+      - postgresql
     restart: always
 
   nginx:
