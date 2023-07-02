@@ -63,5 +63,17 @@ services:
       - celery
     restart: always
 
+  postgresql:
+    image: postgres
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    container_name: postgresql
+    volumes:
+      - postgresql_volume:/var/lib/postgresql/data/
+    restart: always
+
 volumes:
   static_volume:
+  postgresql_volume:
