@@ -4,3 +4,4 @@ requests==2.29.0
 celery
 django-celery-beat
 gunicorn==20.1.0
+psycopg2-binary
