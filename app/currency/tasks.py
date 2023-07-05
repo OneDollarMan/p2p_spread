@@ -159,10 +159,10 @@ def make_chain3():
             if buy_pair.asset != sell_pair.asset:
                 try:
                     spot = CurrenciesSpot.objects.get(asset1=buy_pair.asset, asset2=sell_pair.asset)
-                    profit = (chain3.sell_pair.price_average * chain3.spot.rate) / chain3.buy_pair.price_average
+                    profit = (sell_pair.price_average * spot.rate) / buy_pair.price_average
                 except CurrenciesSpot.DoesNotExist:
                     spot = CurrenciesSpot.objects.get(asset1=sell_pair.asset, asset2=buy_pair.asset)
-                    profit = chain3.sell_pair.price_average / (chain3.buy_pair.price_average * chain3.spot.rate)
+                    profit = sell_pair.price_average / (buy_pair.price_average * spot.rate)
                 try:
                     chain3 = Chain3.objects.get(buy_pair=buy_pair, sell_pair=sell_pair, spot=spot)
                     chain3.profit = profit
