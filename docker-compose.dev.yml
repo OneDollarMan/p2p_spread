@@ -10,7 +10,6 @@ services:
     depends_on:
       - rabbitmq
       - postgresql
-    restart: always
 
   nginx:
     image: nginx:latest
@@ -22,7 +21,6 @@ services:
       - static_volume:/static
     depends_on:
       - web
-    restart: always
 
   rabbitmq:
     image: rabbitmq:3.11.13-management
@@ -30,7 +28,6 @@ services:
     expose:
       - "15672"
       - "5672"
-    restart: always
 
   celery:
     build: ./app
@@ -40,7 +37,6 @@ services:
     depends_on:
       - rabbitmq
       - web
-    restart: always
 
   celery-beat:
     build: ./app
@@ -51,7 +47,6 @@ services:
       - rabbitmq
       - web
       - celery
-    restart: always
 
   postgresql:
     image: postgres
@@ -64,7 +59,6 @@ services:
     container_name: postgresql
     volumes:
       - postgresql_volume:/var/lib/postgresql/data/
-    restart: always
 
 volumes:
   static_volume:

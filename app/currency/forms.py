@@ -14,3 +14,6 @@ class Chain2ReverseForm(forms.Form):
     sell_payment = forms.ModelChoiceField(queryset=Payment.objects.all(), label='Способ оплаты при продаже', required=False)
     is_sell_orders = forms.BooleanField(label='Без продаж заявкой', required=False)
 
+
+
+
