@@ -6,7 +6,7 @@ import requests
 from celery import shared_task
 from django.db import connection
 
-from currency.models import Payment, Currency, Pair, Deal, Chain2, Chain2Reverse
+from currency.models import Payment, Currency, Pair, Deal, Chain2, Chain2Reverse, CurrenciesSpot, Chain3, Chain3Reverse
 
 
 class DealerStealer:
@@ -58,7 +58,8 @@ class DealerStealer:
                 if not self.pairs:
                     break
                 p = self.pairs.pop()
-            deals = self.get_p2p_data(asset=p.asset.abbr, fiat=p.fiat.abbr, trade_type=p.trade_type, pay_types=[p.payment.binance_name])
+            deals = self.get_p2p_data(asset=p.asset.abbr, fiat=p.fiat.abbr, trade_type=p.trade_type,
+                                      pay_types=[p.payment.binance_name])
             for d in deals:
                 try:
                     deal = Deal.objects.get(pair=p)
@@ -75,6 +76,7 @@ class DealerStealer:
 def get_deals():
     DealerStealer(pairs=Pair.objects.all(), thread_count=10).start()
     update_chain2.delay()
+    update_currencies_spot.delay()
 
 
 @shared_task
@@ -94,6 +96,7 @@ def make_all_pairs():
 
 @shared_task
 def calculate_chain2():
+    Chain2.objects.all().delete()
     assets = Currency.objects.filter(is_fiat=0)
     fiats = Currency.objects.filter(is_fiat=1)
     for a in assets:
@@ -102,7 +105,7 @@ def calculate_chain2():
             sell_pairs = Pair.objects.filter(asset=a, fiat=f)
             for buy_pair in buy_pairs:
                 for sell_pair in sell_pairs:
-                    profit = sell_pair.price_average/buy_pair.price_average
+                    profit = sell_pair.price_average / buy_pair.price_average
                     try:
                         chain2 = Chain2.objects.get(buy_pair=buy_pair, sell_pair=sell_pair)
                         chain2.profit = profit
@@ -117,7 +120,9 @@ def calculate_chain2_reverse():
     Chain2Reverse.objects.all().delete()
     c_forwards = Chain2.objects.all()
     for c_forward in c_forwards:
-        c_backwards = Chain2.objects.filter(buy_pair__fiat=c_forward.sell_pair.fiat, buy_pair__payment=c_forward.sell_pair.payment, sell_pair__payment=c_forward.buy_pair.payment).exclude(pk=c_forward.pk)
+        c_backwards = Chain2.objects.filter(buy_pair__fiat=c_forward.sell_pair.fiat,
+                                            buy_pair__payment=c_forward.sell_pair.payment,
+                                            sell_pair__payment=c_forward.buy_pair.payment).exclude(pk=c_forward.pk)
         for c_backward in c_backwards:
             profit = c_backward.profit * c_forward.profit
             Chain2Reverse(forward_chain=c_forward, backward_chain=c_backward, profit=profit).save()
@@ -126,6 +131,71 @@ def calculate_chain2_reverse():
 @shared_task
 def update_chain2():
     with connection.cursor() as cursor:
-        cursor.execute("UPDATE currency_chain2 SET profit = (SELECT AVG(price) FROM currency_deal WHERE pair_id=sell_pair_id) / (SELECT AVG(price) FROM currency_deal WHERE pair_id=buy_pair_id)")
-        cursor.execute("UPDATE currency_chain2reverse SET profit = (SELECT profit FROM currency_chain2 WHERE id=backward_chain_id) * (SELECT profit FROM currency_chain2 WHERE id=forward_chain_id)")
-        cursor.fetchall()
+        cursor.execute(
+            "UPDATE currency_chain2 SET profit = (SELECT AVG(price) FROM currency_deal WHERE pair_id=sell_pair_id) / (SELECT AVG(price) FROM currency_deal WHERE pair_id=buy_pair_id)")
+        cursor.execute(
+            "UPDATE currency_chain2reverse SET profit = (SELECT profit FROM currency_chain2 WHERE id=backward_chain_id) * (SELECT profit FROM currency_chain2 WHERE id=forward_chain_id)")
+
+
+@shared_task
+def update_currencies_spot():
+    for cs in CurrenciesSpot.objects.all():
+        headers = {'content-type': 'application/json'}
+        response = requests.get(f'https://api.binance.com/api/v3/ticker/price?symbol={cs.asset1.abbr}{cs.asset2.abbr}',
+                                headers=headers)
+        if response.status_code != 200:
+            response.raise_for_status()
+        cs.rate = float(json.loads(response.text)['price'])
+        cs.save()
+    update_chain3.delay()
+
+
+@shared_task
+def make_chain3():
+    buy_pairs = Pair.objects.filter(trade_type='BUY')
+    sell_pairs = Pair.objects.all()
+    for buy_pair in buy_pairs:
+        for sell_pair in sell_pairs:
+            if buy_pair.asset != sell_pair.asset:
+                try:
+                    spot = CurrenciesSpot.objects.get(asset1=buy_pair.asset, asset2=sell_pair.asset)
+                    profit = (chain3.sell_pair.price_average * chain3.spot.rate) / chain3.buy_pair.price_average
+                except CurrenciesSpot.DoesNotExist:
+                    spot = CurrenciesSpot.objects.get(asset1=sell_pair.asset, asset2=buy_pair.asset)
+                    profit = chain3.sell_pair.price_average / (chain3.buy_pair.price_average * chain3.spot.rate)
+                try:
+                    chain3 = Chain3.objects.get(buy_pair=buy_pair, sell_pair=sell_pair, spot=spot)
+                    chain3.profit = profit
+                    chain3.save()
+                except Chain3.DoesNotExist:
+                    Chain3(buy_pair=buy_pair, sell_pair=sell_pair, profit=profit, spot=spot).save()
+
+
+@shared_task
+def update_chain3():
+    for chain3 in Chain3.objects.all():
+        if chain3.buy_pair.asset == chain3.spot.asset1:
+            chain3.profit = (chain3.sell_pair.price_average * chain3.spot.rate) / chain3.buy_pair.price_average
+        else:
+            chain3.profit = chain3.sell_pair.price_average / (chain3.buy_pair.price_average * chain3.spot.rate)
+        chain3.save()
+    update_chain3_reverse.delay()
+
+
+@shared_task
+def make_chain3_reverse():
+    Chain3Reverse.objects.all().delete()
+    c_forwards = Chain3.objects.all()
+    for c_forward in c_forwards:
+        c_backwards = Chain3.objects.filter(buy_pair__fiat=c_forward.sell_pair.fiat,
+                                            buy_pair__payment=c_forward.sell_pair.payment,
+                                            sell_pair__payment=c_forward.buy_pair.payment).exclude(pk=c_forward.pk)
+        for c_backward in c_backwards:
+            profit = c_backward.profit * c_forward.profit
+            Chain3Reverse(forward_chain=c_forward, backward_chain=c_backward, profit=profit).save()
+
+
+@shared_task
+def update_chain3_reverse():
+    with connection.cursor() as cursor:
+        cursor.execute("UPDATE currency_chain3reverse SET profit = (SELECT profit FROM currency_chain3 WHERE id=backward_chain_id) * (SELECT profit FROM currency_chain3 WHERE id=forward_chain_id)")

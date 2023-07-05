@@ -1,7 +1,7 @@
 {% extends "currency/base.html" %}
 {% load bootstrap5 %}
 {% block content %}
-<div class="d-flex flex-fill">
+<div class="d-flex">
     <div class="d-flex flex-column">
         <div class="card m-2">
             <div class="card-header">
@@ -21,18 +21,18 @@
 
     <div class="card m-2 flex-fill">
         <div class="card-header d-flex justify-content-between">
-            Выгодные цепочки сделок (Рубли)
+            Спреды 2х (Рубли)
             <span class="badge bg-primary">Обновлено: {{ time }}</span>
         </div>
         <div class="card-body">
             <table class="table table-striped table-hover border">
-                <tr>
+                <tr align="center">
                     <th>#</th>
                     <th colspan="5">Сделка</th>
                     <th>Профит</th>
                 </tr>
                 {% for chain in chain2 %}
-                <tr style="font-weight: bold;">
+                <tr style="font-weight: bold;" align="center">
                     <td>{{ forloop.counter }}</td>
                     {% include 'currency/macro/chain.html' with chain=chain %}
                 </tr>

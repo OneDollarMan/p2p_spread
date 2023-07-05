@@ -36,14 +36,14 @@ def changes_chain2(request):
     if request.GET:
         form = forms.Chain2Form(request.GET)
         context = {
-            'title': 'Спреды',
+            'title': 'Спреды 2х',
             'time': PeriodicTask.objects.get(task='currency.tasks.get_deals').last_run_at,
             'chain2': service.get_chain2_objects_filtered(form),
             'form': form,
         }
     else:
         context = {
-            'title': 'Спреды',
+            'title': 'Спреды 2х',
             'time': PeriodicTask.objects.get(task='currency.tasks.get_deals').last_run_at,
             'chain2': service.get_chain2_objects_filtered(),
             'form': forms.Chain2Form(),
@@ -56,19 +56,59 @@ def changes_chain2reverse(request):
     if request.GET:
         form = forms.Chain2ReverseForm(request.GET)
         context = {
-            'title': 'Обратные спреды',
+            'title': 'Спреды 2х обратные',
             'time': PeriodicTask.objects.get(task='currency.tasks.get_deals').last_run_at,
             'chain2reverse': service.get_chain2reverse_objects_filtered(form),
             'form': form
         }
     else:
         context = {
-            'title': 'Обратные спреды',
+            'title': 'Спреды 2х обратные',
             'time': PeriodicTask.objects.get(task='currency.tasks.get_deals').last_run_at,
             'chain2reverse': service.get_chain2reverse_objects_filtered(),
             'form': forms.Chain2ReverseForm()
         }
     return render(request, 'currency/changes_chain2reverse.html', context)
+
+
+@login_required
+def changes_chain3(request):
+    if request.GET:
+        form = forms.Chain2ReverseForm(request.GET)
+        context = {
+            'title': 'Спреды 3х',
+            'time': PeriodicTask.objects.get(task='currency.tasks.get_deals').last_run_at,
+            'chain3': service.get_chain3_objects_filtered(form),
+            'form': form,
+        }
+    else:
+        context = {
+            'title': 'Спреды 3х',
+            'time': PeriodicTask.objects.get(task='currency.tasks.get_deals').last_run_at,
+            'chain3': service.get_chain3_objects_filtered(),
+            'form': forms.Chain2ReverseForm(),
+        }
+    return render(request, 'currency/changes_chain3.html', context)
+
+
+@login_required
+def changes_chain3reverse(request):
+    if request.GET:
+        form = forms.Chain2ReverseForm(request.GET)
+        context = {
+            'title': 'Спреды 3х обратные',
+            'time': PeriodicTask.objects.get(task='currency.tasks.get_deals').last_run_at,
+            'chain3reverse': service.get_chain3reverse_objects_filtered(form),
+            'form': form
+        }
+    else:
+        context = {
+            'title': 'Спреды 3х обратные',
+            'time': PeriodicTask.objects.get(task='currency.tasks.get_deals').last_run_at,
+            'chain3reverse': service.get_chain3reverse_objects_filtered(),
+            'form': forms.Chain2ReverseForm()
+        }
+    return render(request, 'currency/changes_chain3reverse.html', context)
 
 
 @login_required

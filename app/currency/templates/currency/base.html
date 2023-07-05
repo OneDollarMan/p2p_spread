@@ -11,7 +11,7 @@
 {% block bootstrap5_content %}
 <div class="d-flex flex-column min-vh-100">
     <header class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
-        <div class="container">
+        <div class="container-xxl">
             <a class="navbar-brand" href="{% url 'index' %}">{{ SITE_NAME }}</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                     data-bs-target="#navbarSupportedContent"
@@ -30,9 +30,10 @@
                         </a>
                         <ul class="dropdown-menu p-2 rounded-3 mx-0 shadow w-220px">
                             <div class="d-grid gap-1">
-                                <li><a class="dropdown-item rounded-2" href="{% url 'changes_chain2' %}">Спреды</a></li>
-                                <li><a class="dropdown-item rounded-2" href="{% url 'changes_chain2reverse' %}">Обратные
-                                    спреды</a></li>
+                                <li><a class="dropdown-item rounded-2" href="{% url 'changes_chain2' %}">Спреды 2х</a></li>
+                                <li><a class="dropdown-item rounded-2" href="{% url 'changes_chain2reverse' %}">Спреды 2х обратные</a></li>
+                                <li><a class="dropdown-item rounded-2" href="{% url 'changes_chain3' %}">Спреды 3х</a></li>
+                                <li><a class="dropdown-item rounded-2" href="{% url 'changes_chain3reverse' %}">Спреды 3х обратные</a></li>
                             </div>
                         </ul>
                     </li>
@@ -77,12 +78,12 @@
             {% endfor %}
         </div>
         {% endif %}
-        <div class="container p-2 d-flex justify-content-center">
+        <div class="container-fluid p-2 d-flex justify-content-center">
             {% block content %}{% endblock %}
         </div>
     </main>
     <footer class="footer mt-auto py-3 bg-light border-top">
-        <div class="container d-flex flex-wrap justify-content-between align-items-center">
+        <div class="container-xxl d-flex flex-wrap justify-content-between align-items-center">
             <div class="col-md-4 d-flex align-items-center">
                 <span class="mb-3 mb-md-0 text-body-secondary">© {% now 'Y' %} {{ SITE_NAME }}</span>
             </div>
