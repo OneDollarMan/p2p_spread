@@ -94,13 +94,18 @@
     </footer>
 </div>
 
-<script type="text/javascript">
+<script type="module">
     const toastElList = document.querySelectorAll('.toast')
     toastElList.forEach(el => el.style.display = 'block')
 
     const toastBtns = document.querySelectorAll('.btn-close')
     toastBtns.forEach(el => el.onclick = function() {
         this.parentElement.parentElement.style.display = 'None'
+    })
+
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
     })
 
 </script>

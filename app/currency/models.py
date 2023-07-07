@@ -41,11 +41,17 @@ class Pair(models.Model):
     def price_average(self):
         return self.deal_set.aggregate(Avg('price'))['price__avg']
 
+    @property
+    def tooltip(self):
+        return self.deal_set.order_by('price').first()
+
 
 class Deal(models.Model):
     seller = models.CharField(max_length=45)
     price = models.FloatField()
     amount = models.FloatField()
+    min_amount = models.FloatField(default=0)
+    max_amount = models.FloatField(default=0)
     pair = models.ForeignKey(Pair, on_delete=models.CASCADE, default=0)
 
     def __str__(self):

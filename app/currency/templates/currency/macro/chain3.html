@@ -1,6 +1,15 @@
-<td align="right"><div class="d-flex flex-column"><div><span class="badge bg-secondary">{{ chain.buy_pair.price_average }}</span></div><div>{{ chain.buy_pair.payment.name }}</div></div></td>
+<td align="right"><div class="d-flex flex-column"><div><span class="badge bg-secondary" role='button' data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="{% include 'currency/macro/tooltip.html' with pair=chain.buy_pair %}">{{ chain.buy_pair.price_average }}</span></div><div>{{ chain.buy_pair.payment.name }}</div></div></td>
 <td class="align-middle">→</td>
-<td class="align-middle"><div class="d-flex flex-column"><div><span class="badge bg-secondary">{% if chain.spot.asset2 == chain.sell_pair.asset %} 1 {{ chain.buy_pair.asset.abbr }} = {{ chain.spot.rate }} {{ chain.sell_pair.asset.abbr }} {% else %} 1 {{ chain.buy_pair.asset.abbr }} = {{ chain.spot.reverse_rate }} {{ chain.sell_pair.asset.abbr }} {% endif %}</span></div><div>{{ chain.buy_pair.asset.abbr }} → {{ chain.sell_pair.asset.abbr }}</div></div></td>
+<td class="align-middle">
+    <div class="d-flex flex-column">
+        <div>
+            <span class="badge bg-secondary" role='button' data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="{% if chain.spot.asset1 == chain.sell_pair.asset %} 1 {{ chain.sell_pair.asset.abbr }} = {{ chain.spot.rate }} {{ chain.buy_pair.asset.abbr }} {% else %} 1 {{ chain.sell_pair.asset.abbr }} = {{ chain.spot.reverse_rate }} {{ chain.buy_pair.asset.abbr }} {% endif %}">
+                {% if chain.spot.asset2 == chain.sell_pair.asset %} 1 {{ chain.buy_pair.asset.abbr }} = {{ chain.spot.rate }} {{ chain.sell_pair.asset.abbr }} {% else %} 1 {{ chain.buy_pair.asset.abbr }} = {{ chain.spot.reverse_rate }} {{ chain.sell_pair.asset.abbr }} {% endif %}
+            </span>
+        </div>
+        <div>{{ chain.buy_pair.asset.abbr }} → {{ chain.sell_pair.asset.abbr }}</div>
+    </div>
+</td>
 <td class="align-middle">→</td>
-<td align="left"><div class="d-flex flex-column"><div><span class="badge bg-secondary">{{ chain.sell_pair.price_average }}</span></div><div>{{ chain.sell_pair.payment.name }}{% if chain.sell_pair.trade_type == 'BUY' %} заявкой{% endif%}</div></div></td>
+<td align="left"><div class="d-flex flex-column"><div><span class="badge bg-secondary" role='button' data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="{% include 'currency/macro/tooltip.html' with pair=chain.sell_pair %}">{{ chain.sell_pair.price_average }}</span></div><div>{{ chain.sell_pair.payment.name }}{% if chain.sell_pair.trade_type == 'BUY' %} заявкой{% endif%}</div></div></td>
 <td class="border-end align-middle"><span class="badge {% if chain.profit_percentage > 0 %}bg-success{% else %}bg-danger{% endif %}">{{ chain.profit_percentage }}%</span></td>

@@ -47,7 +47,9 @@ class DealerStealer:
             res.append(
                 {'seller': row['advertiser']['userNo'],
                  'price': row['adv']['price'],
-                 'amount': row['adv']['surplusAmount']
+                 'amount': row['adv']['surplusAmount'],
+                 'min': row['adv']['minSingleTransAmount'],
+                 'max': row['adv']['dynamicMaxSingleTransAmount']
                  }
             )
         return res
@@ -66,9 +68,11 @@ class DealerStealer:
                     deal.seller = d['seller']
                     deal.price = d['price']
                     deal.amount = d['amount']
+                    deal.min_amount = d['min']
+                    deal.max_amount = d['max']
                     deal.save()
                 except Deal.DoesNotExist:
-                    Deal(seller=d['seller'], price=d['price'], amount=d['amount'], pair=p).save()
+                    Deal(seller=d['seller'], price=d['price'], amount=d['amount'], min_amount=d['min'], max_amount=d['max'], pair=p).save()
             sleep(1)
 
 
