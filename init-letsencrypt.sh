@@ -5,7 +5,7 @@ if ! [ -x "$(command -v docker-compose)" ]; then
   exit 1
 fi
 
-domains=(coindripper.ru www.coindripper.ru coindripper.site www.coindripper.site)
+domains=(coindripper.ru www.coindripper.ru)
 rsa_key_size=4096
 data_path="./certbot"
 email="vladskorikov@gmail.com" # Adding a valid address is strongly recommended
